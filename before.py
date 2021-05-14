@@ -1,6 +1,15 @@
 import string
 import random
 
+class Order:
+
+    def __init__(self):
+        self.id = ''.join(random.choices(string.ascii_lowercase, k=6))
+        self.status = "open"
+
+    def set_status(self, status):
+        self.status = status
+
 class Authorizer_SMS:
 
     def __init__(self):
@@ -19,9 +28,11 @@ class Authorizer_SMS:
 
 class PaymentProcessor:
     
-    def pay(self, order_id):
-        self.authorizer = Authorizer_SMS()
-        self.authorizer.generate_sms_code()
-        if not self.authorizer.is_authorized():
+    def pay(self, order):
+        authorizer = Authorizer_SMS()
+        authorizer.generate_sms_code()
+        authorizer.authorize()
+        if not authorizer.is_authorized():
             raise Exception("Not authorized")
-        print(f"Processing payment for order with id {order_id}")
+        print(f"Processing payment for order with id {order.id}")
+        order.set_status("paid")

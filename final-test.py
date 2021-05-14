@@ -57,26 +57,26 @@ class Authorizer_Robot_TestCase(unittest.TestCase):
 class PaymentProcessor_TestCase(unittest.TestCase):
 
     def test_init(self):
-        auth = Authorizer_Robot()
+        auth = Authorizer_SMS()
         p = PaymentProcessor(auth)
         self.assertEqual(p.authorizer, auth)
 
     def test_payment_success(self):
-        with patch('sys.stdout', new=StringIO()) as mocked_output:
-            auth = Authorizer_Robot()
-            auth.authorized = True
+        auth = Authorizer_SMS()
+        auth.generate_sms_code()
+        with patch('builtins.input', return_value=auth.code):
             p = PaymentProcessor(auth)
-            order_id = "abcdef"
-            expected_out = f"Processing payment for order with id {order_id}"
-            p.pay(order_id)
-            self.assertEqual(mocked_output.getvalue().strip(), expected_out)
+            order = Order()
+            p.pay(order)
+            self.assertEqual(order.status, "paid")
 
     def test_payment_fail(self):
-        with self.assertRaises(Exception):
-            auth = Authorizer_Robot()
-            auth.authorized = False
+        auth = Authorizer_SMS()
+        auth.generate_sms_code()
+        with patch('builtins.input', return_value="1234567"):
             p = PaymentProcessor(auth)
-            p.pay("abcdef")
+            order = Order()
+            self.assertRaises(Exception, p.pay, order)
 
 
 if __name__ == '__main__':

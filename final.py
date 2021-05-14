@@ -11,6 +11,15 @@ class Authorizer(ABC):
     def is_authorized(self) -> bool:
         pass
 
+class Order:
+
+    def __init__(self):
+        self.id = ''.join(random.choices(string.ascii_lowercase, k=6))
+        self.status = "open"
+
+    def set_status(self, status):
+        self.status = status
+
 class Authorizer_SMS(Authorizer):
 
     def __init__(self):
@@ -46,7 +55,9 @@ class PaymentProcessor:
     def __init__(self, authorizer: Authorizer):
         self.authorizer = authorizer
     
-    def pay(self, order_id):
+    def pay(self, order):
+        self.authorizer.authorize()
         if not self.authorizer.is_authorized():
             raise Exception("Not authorized")
-        print(f"Processing payment for order with id {order_id}")
+        print(f"Processing payment for order with id {order.id}")
+        order.set_status("paid")
